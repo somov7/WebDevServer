@@ -5,9 +5,9 @@ const cookieParser = require('cookie-parser')
 const cors = require('cors')
 const app = express()
 
-const apiKey = 'd859b3f2d19d0f2d84d5f8fe9631c20a'
-const apiLink = 'https://api.openweathermap.org/data/2.5/weather?units=metric&lang=ru&'
-const clientLink = 'https://somov7.github.io'
+const apiKey = process.env.WEATHER_API_KEY
+const apiLink = process.env.WEATHER_API_LINK
+const clientLink = process.env.CLIENT_LINK
 
 const Datastore = require('nedb')
 const database = new Datastore({ filename: '.data/database', autoload: true })
@@ -45,7 +45,7 @@ app.use(function (request, response, next) {
     }
 })
 app.use(cookieParser())
-app.listen(3000, () => console.log("Server started!"))
+app.listen(process.env.PORT)
 
 /* endpoints */
 
@@ -61,7 +61,6 @@ app.get('/weather/coordinates', cors(corsOptions), async (request, response) => 
     const latitude = request.query.lat
     const longitude = request.query.lon
     const weatherResponse = await getWeatherByCoords(latitude, longitude)
-    console.log('get by coords called')
 
     response.json(weatherResponse)
 })
@@ -69,7 +68,6 @@ app.get('/weather/coordinates', cors(corsOptions), async (request, response) => 
 app.get('/weather/id', cors(corsOptions), async (request, response) => {
     const id = request.query.q
     const weatherResponse = await getWeatherByID(id)
-    console.log('get by id called')
 
     response.json(weatherResponse)
 })
@@ -77,8 +75,6 @@ app.get('/weather/id', cors(corsOptions), async (request, response) => {
 app.get('/favourites', cors(corsOptions), (request, response) => {
     let cities = []
     let userKey = request.cookies.userKey
-    console.log('get favs called')
-    console.log(userKey)
 
     database.find({ userToken: userKey }, function(error, docs) {
         if (error != null) {
@@ -101,8 +97,6 @@ app.post('/favourites', cors(corsOptions), async (request, response) => {
     if(typeof(userKey) == 'undefined') {
         userKey = token.generate(20)
     }
-    console.log('post called')
-    console.log(userKey)
 
     if(weatherResponse.success) {   
         database.find({ userToken: userKey, cities: { $elemMatch: weatherResponse.weather.id } }, function(error, docs) {
@@ -132,9 +126,7 @@ app.post('/favourites', cors(corsOptions), async (request, response) => {
 
 app.delete('/favourites', cors(corsOptions), (request, response) => {
     const id = Number(request.query.q)
-    console.log('delete called')
     let userKey = request.cookies.userKey
-    console.log(userKey)
 
     if(!Number.isInteger(id)) {
         response.json({ success: false, message: 'Incorrect query' })
@@ -186,16 +178,16 @@ async function getWeather(url){
 }
 
 function getWeatherByName(cityName){
-    requestURL = apiLink + 'q=' + encodeURI(cityName) + '&appid=' + apiKey;
+    const requestURL = apiLink + 'q=' + encodeURI(cityName) + '&appid=' + apiKey;
     return getWeather(requestURL);
 }
 
 function getWeatherByID(cityID){
-    requestURL = apiLink + 'id=' + encodeURI(cityID) + '&appid=' + apiKey;
+    const requestURL = apiLink + 'id=' + encodeURI(cityID) + '&appid=' + apiKey;
     return getWeather(requestURL);
 }
 
 function getWeatherByCoords(latitude, longitude){
-    requestURL = apiLink + 'lat=' + encodeURI(latitude) + '&lon=' + encodeURI(longitude) + '&appid=' + apiKey;
+    const requestURL = apiLink + 'lat=' + encodeURI(latitude) + '&lon=' + encodeURI(longitude) + '&appid=' + apiKey;
     return getWeather(requestURL);
 }
