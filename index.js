@@ -90,8 +90,8 @@ app.get('/favourites', cors(corsOptions), (request, response) => {
     })
 })
 
-app.post('/favourites', cors(corsOptions), async (request, response) => {
-    const city = request.query.q
+app.post('/favourites/:city', cors(corsOptions), async (request, response) => {
+    const city = request.params.city
     const weatherResponse = await getWeatherByName(city)
     let userKey = request.cookies.userKey
     if(typeof(userKey) == 'undefined') {
@@ -103,7 +103,7 @@ app.post('/favourites', cors(corsOptions), async (request, response) => {
             if (error != null) {
                 response.json({ success: false, message: error })
             }
-            else if(docs.length > 0) {
+            else if(docs.length !== 0) {
                 response.cookie('userKey', userKey, cookieOptions).json({ success: true, duplicate: true })
             } 
             else {
@@ -124,8 +124,8 @@ app.post('/favourites', cors(corsOptions), async (request, response) => {
     }
 })
 
-app.delete('/favourites', cors(corsOptions), (request, response) => {
-    const id = Number(request.query.q)
+app.delete('/favourites/:id', cors(corsOptions), (request, response) => {
+    const id = Number(request.params.id)
     let userKey = request.cookies.userKey
 
     if(!Number.isInteger(id)) {
@@ -139,7 +139,7 @@ app.delete('/favourites', cors(corsOptions), (request, response) => {
             if(error != null) {
                 response.json({ success: false, message: error })
             }
-            else if(docs.length == 0) {
+            else if(docs.length === 0) {
                 response.json({ success: false, message: 'City id is not in the list' })
             }
             else {
