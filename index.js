@@ -5,9 +5,10 @@ const cookieParser = require('cookie-parser')
 const cors = require('cors')
 const app = express()
 
-const apiKey = process.env.WEATHER_API_KEY
-const apiLink = process.env.WEATHER_API_LINK
-const clientLink = process.env.CLIENT_LINK
+const apiKey = process.env.WEATHER_API_KEY;
+const apiLink = 'https://api.openweathermap.org/data/2.5/weather?units=metric&lang=ru&';
+const clientLink = process.env.CLIENT_LINK;
+const defaultCityID = Number(process.env.DEFAULT_CITY_ID);
 
 const Datastore = require('nedb')
 const database = new Datastore({ filename: '.data/database', autoload: true })
@@ -52,7 +53,6 @@ app.listen(process.env.PORT)
 app.get('/weather/city', cors(corsOptions), async (request, response) => {
     const city = request.query.q
     const weatherResponse = await getWeatherByName(city)
-    console.log('get by city name called')
     
     response.json(weatherResponse)
 })
@@ -88,6 +88,18 @@ app.get('/favourites', cors(corsOptions), (request, response) => {
             response.json({ success: true, cities: docs[0].cities })
         }
     })
+})
+app.get('/weather/default', cors(corsOptions), async (request, response) => {
+    const weatherResponse = await getWeatherByID(defaultCityID)
+    
+    response.json(weatherResponse)
+})
+
+app.get('/favourites/:id', cors(corsOptions), async (request, response) => {
+    const id = request.params.id
+    const weatherResponse = await getWeatherByID(id)
+
+    response.json(weatherResponse)
 })
 
 app.post('/favourites/:city', cors(corsOptions), async (request, response) => {
