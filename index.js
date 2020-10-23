@@ -10,7 +10,7 @@ const apiLink = 'https://api.openweathermap.org/data/2.5/weather?units=metric&la
 const clientLink = 'https://somov7.github.io'
 
 const Datastore = require('nedb')
-const database = new Datastore({ filename: 'database/.database', autoload: true })
+const database = new Datastore({ filename: '.data/database', autoload: true })
 
 const corsOptions = {
     origin: clientLink,
